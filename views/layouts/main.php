@@ -15,7 +15,7 @@ use yii\helpers\Html;
 </head>
 <body>
 <?php $this->beginBody() ?>
-    <header><h2><?= Html::encode($this->title) ?></h2></header>
+    <header><a style="float:right" href="https://github.com/SaemonZixel/lemon-test">https://github.com/SaemonZixel/lemon-test</a><h2><?= Html::encode($this->title) ?></h2></header>
     <?= $content ?>
     <footer></footer>
 <?php $this->endBody() ?>

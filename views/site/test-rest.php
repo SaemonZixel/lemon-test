@@ -9,15 +9,10 @@ $this->registerJs(<<<EOT_JS_CODE
 			password: form.password.value
 		},
 		'/auth', 'POST', function(){
-			if(this.status > 299) {
-				try {
-					var resp = JSON.parse(this.responseText);
-					alert(resp.name+'\\n'+resp.message);
-				} catch(ex) {
-					alert(this.responseText || this.statusText);
-				}
-				return;
-			}
+			if (check_error_in_resp(this)) return;
+			
+			document.getElementById('token').innerHTML = JSON.parse(this.responseText);
+			document.getElementById('get-token-btn').style.display = 'none';
 			
 			comp_refresh();
 		});
@@ -29,6 +24,8 @@ $this->registerJs(<<<EOT_JS_CODE
 	// запрашивает список всех компаний с сервера и заново заполняет таблицу
 	function comp_refresh() {
 		xhr({}, '/company/list', 'GET', function(){
+			if (check_error_in_resp(this)) return;
+			
 			var resp = JSON.parse(this.responseText);
 			
 			var html = [];
@@ -71,9 +68,9 @@ $this->registerJs(<<<EOT_JS_CODE
 			button.removeAttribute('disabled', 'disabled');
 			button.innerHTML = 'save';
 		
-			var resp = JSON.parse(this.responseText);
+			if (check_error_in_resp(this)) return;
 			
-			if (check_error_in_resp(resp)) return;
+			var resp = JSON.parse(this.responseText);
 			
 			comp_refresh();
 		});
@@ -86,9 +83,9 @@ $this->registerJs(<<<EOT_JS_CODE
 			button.removeAttribute('disabled');
 			button.innerHTML = 'delete';
 			
-			var resp = JSON.parse(this.responseText);
+			if (check_error_in_resp(this)) return;
 			
-			if (check_error_in_resp(resp)) return;
+			var resp = JSON.parse(this.responseText);
 			
 			comp_refresh();
 		});
@@ -108,35 +105,42 @@ $this->registerJs(<<<EOT_JS_CODE
 			button.removeAttribute('disabled');
 			button.innerHTML = 'insert';
 			
-			var resp = JSON.parse(this.responseText);
+			if (check_error_in_resp(this)) return;
 			
-			if (check_error_in_resp(resp)) return;
+			var resp = JSON.parse(this.responseText);
 		
 			comp_refresh();
 		});
 	}
 	
-	function check_error_in_resp(resp) {
-		// пришли ошибки валидации?
-		if(resp.length) {
-			var msg = '';
-			for(var i=0; i<resp.length; i++)
-				msg += resp[i].message+'\\n';
-			alert(msg);
+	function check_error_in_resp(req) {
+		if(req.status > 299) {
+			try {
+				var resp = JSON.parse(req.responseText);
+
+				// пришли ошибки валидации?
+				if(resp.length) {
+					var msg = '';
+					for(var i=0; i<resp.length; i++)
+						msg += resp[i].message+'\\n';
+					alert(msg);
+					return true;
+				}
+
+				// Exception?
+				if('stack-trace' in resp) {
+					alert(resp.message);
+					return true;
+				}
+		
+				alert(resp.name+'\\n'+resp.message);
+			} catch(ex) {
+				alert(req.responseText || req.statusText);
+			}
 			return true;
 		}
 		
-		// ошибка операции?
-		if(resp.status > 299) {
-			alert(resp.message);
-			return true;
-		}
-		
-		// Exception?
-		if('stack-trace' in resp) {
-			alert(resp.message);
-			return true;
-		}
+		return false;
 	}
 	
 	function xhr(data, url, method, callback) {
@@ -147,6 +151,8 @@ $this->registerJs(<<<EOT_JS_CODE
 			var xhr = new XMLHttpRequest();
 			xhr.open(method || 'POST', url || '/', true); 
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.setRequestHeader('Accept', 'application/json');
+			xhr.setRequestHeader('Authorization', 'Bearer '+document.getElementById('token').innerHTML);
 			xhr.onreadystatechange = function(){ 
 				if(xhr.readyState != 4) return;
 				console.log(xhr.responseText);
@@ -161,13 +167,13 @@ EOT_JS_CODE
 <div style="display:inline-block;background:#eee">
 	<form action="" method="" onsubmit="return login_form_onsubmit(this);">
 		<fieldset style="border:none">
-			<input type="text" name="login" value="test"/>
+			<input type="text" name="login" value="demo"/>
 		</fieldset>
 		<fieldset style="border:none">
-			<input type="password" name="password" value="test"/>
+			<input type="password" name="password" value="demo"/>
 		</fieldset>
 		<fieldset style="border:none">
-		<button type="submit">Auth</button>
+		<span id="token"></span><button id="get-token-btn" type="submit">Auth</button>
 		</fieldset>
 	</form>
 </div>
@@ -206,6 +212,3 @@ EOT_JS_CODE
 		</tr> -->
 	</tbody>
 </table>
-<pre><?php
-print_r($comps);
-?></pre>

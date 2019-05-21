@@ -7,7 +7,7 @@ $params = array_merge(
 );
 
 return [
-    'id' => 'app-api',
+    'id' => 'lemon-test',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log', 'common\bootstrap\SetUp', 'debug'],
 	'modules' => [
@@ -34,7 +34,7 @@ return [
             ],
         ],
         'user' => [
-            'identityClass' => 'common\auth\Identity',
+            'identityClass' => 'app\models\User',
             'enableAutoLogin' => false,
             'enableSession' => false,
         ],
@@ -60,6 +60,13 @@ return [
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
+        ],
+        'mailer' => [
+            'class' => 'yii\swiftmailer\Mailer',
+            // send all mails to a file by default. You have to set
+            // 'useFileTransport' to false and configure a transport
+            // for the mailer to send real emails.
+            'useFileTransport' => false,
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,

@@ -2,19 +2,17 @@
 
 namespace api\controllers;
 
-use common\auth\SimpleLoginPasswordAuth;
-use Domain\Manager\TokenManagerInterface;
+use Yii;
+use app\models\User;
 use yii\base\Module;
-use yii\filters\auth\CompositeAuth;
 use yii\rest\Controller;
 use yii\web\Response;
+use yii\web\HttpException;
+use yii\web\UnauthorizedHttpException;
 
 class AuthController extends Controller
 {
-    /**
-     * @var TokenManagerInterface
-     */
-    private $tokenManager;
+	/*private $tokenManager;
 
     public function __construct(string $id, Module $module, TokenManagerInterface $tokenManager, array $config = [])
     {
@@ -37,42 +35,29 @@ class AuthController extends Controller
 		$behaviors['contentNegotiator']['formats']['text/html'] = Response::FORMAT_JSON;
 
 		return $behaviors;
-	}
+	}*/
 
-    /**
-     * @SWG\Post(path="/auth",
-     *     tags={"Auth"},
-     *     summary="Аутентификация по логину паролю (получение токена)",
-     *     description="Время жизни токена: 20 минут. Во всех методах данный токен нужно передавать в хэдере: Authorization: Bearer {{token}} (можно без приставки Bearer)",
-     *     consumes={"application/json"},
-     *     produces={"application/json"},
-     *     @SWG\Parameter(
-     *         name="body",
-     *         in="body",
-     *         description="",
-     *         required=true,
-     *         @SWG\Schema(ref="#/definitions/AuthRequest"),
-     *     ),
-     *     @SWG\Response(
-     *         response = 200,
-     *         description = "",
-     *         @SWG\Schema(ref = "#/definitions/Token"),
-     *     ),
-     *     @SWG\Response(
-     *         response = 401,
-     *         description = "Доступ запрещен. Неверный логин или пароль",
-     *     ),
-     *     @SWG\Response(
-     *         response = 400,
-     *         description = "Неверный запрос. Bad Request. Невалидный JSON, и т.д.",
-     *     ),
-     * )
-     */
+	// сделаем ка мы по простому
 	public function actionIndex()
 	{
-		return [
-			'token' => $this->tokenManager->generateToken(\Yii::$app->user->getId()),
-		];
+		$login = Yii::$app->request->post('login', '');
+		
+		if (empty($login)) {
+			throw new HttpException(400, 'Login not specified');
+		}
+		
+		$user = User::findByUsername($login);
+		if (empty($user)) {
+			throw new UnauthorizedHttpException('Invalid login or password');
+		}
+		
+		$password = Yii::$app->request->post('password', '');
+		
+		if ($user->password != $password) {
+			throw new UnauthorizedHttpException('Invalid login or password');
+		}
+		
+		return $user->accessToken;
 	}
 
     protected function verbs()

@@ -35,7 +35,7 @@ class CompanyForm extends Model
             'comp_name' => 'Название компании',
             'comp_addr' => 'Адрес',
             'comp_phone' => 'Телефон',
-            'comp_email' => 'Электропочта',
+            'comp_email' => 'E-mail',
         ];
     }
 

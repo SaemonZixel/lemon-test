@@ -18,9 +18,9 @@ class CompanyController extends Controller
         $behaviors = parent::behaviors();
 
         // только авторизованным пользователям
-        /* $behaviors['authenticator'] = [
-            'class' => HttpBearerAuth::className(),
-        ]; */
+        $behaviors['authenticator'] = [
+            'class' => 'yii\filters\auth\HttpBearerAuth',
+        ];
 
         return $behaviors;
     }

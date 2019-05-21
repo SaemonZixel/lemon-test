@@ -46,16 +46,16 @@ error_log(json_encode($message));
 	public function sendToSMS($messages) 
 	{
 		$phone = isset($this->phone) ? $this->phone : '79182010059';
-		
+
 		if (isset(SMSAndEMailTarget::$test_phone))
- 			$phone = SMSAndEMailTarget::$test_phone; // из-за этой строки скрипт отваливается:(
-		
+ 			$phone = SMSAndEMailTarget::$test_phone;
 
 		foreach ($messages as $message) {
 			$sms_text = $this->_formatMessage($message, true);
-			
+
 			/* Send SMS */
-			
+			error_log(@file_get_contents("https://smsc.ru/sys/send.php?login=saemon&psw=saemon123&phones=$phone&mes=$sms_text"));
+
 			error_log(file_put_contents(Yii::getAlias('@runtime').'/logs/sms.txt', "$sms_text\n", FILE_APPEND));
 		}
 	}
@@ -82,22 +82,21 @@ error_log(json_encode($message));
 			$mail_to = SMSAndEMailTarget::$test_email;
 		}
 
-		// не отправляет у меня
-		/* Yii::$app->mailer->compose()
-			->setFrom($email_from)
-			->setTo($email_to)
-			->setSubject($email_subject)
-			->setTextBody($email_body)
-			->send(); */
+		
+		Yii::$app->mailer->compose()
+			->setFrom($mail_from)
+			->setTo($mail_to)
+			->setSubject($mail_subject)
+			->setTextBody($mail_body)
+			->send();
 			
-		mail(
+		/* mail(
 			$mail_to, 
 			$mail_subject, 
 			$mail_body, 
 			"From: $mail_from\nContent-Language: ru\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit", 
 			" -f $mail_from"
-		);
-error_log(__FILE__.':'.__LINE__);
+		);*/
 	}
 	
 	// форматирует сообщение в строку

@@ -18,6 +18,7 @@ $this->title = 'Test Target';
 		<td><textarea id="mail_txt" style="width:400px;height:300px" placeholder="(mail.txt)"><?php if(file_exists(Yii::getAlias('@runtime').'/logs/mail.txt')) echo file_get_contents(Yii::getAlias('@runtime').'/logs/mail.txt'); ?></textarea><br><button onclick="document.location='?make=refresh-'+(new Date())*1">refresh</button></td>
 	</tr>
 </table>
-<pre><?php
-// print_r($context);
+<h4 style="margin-bottom:0">/var/log/exim/main.log (last 1400bytes)</h4>
+<pre style="white-space:pre-wrap">...<?php
+print_r(@file_get_contents('/var/log/exim/main.log', false, null, @filesize('/var/log/exim/main.log')-1400));
 ?></pre>
